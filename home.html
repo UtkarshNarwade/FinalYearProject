@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure File Encryption - Login/Register</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="static/css/styles.css">
+    <script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.77/build/spline-viewer.js"></script>
+    <script type="module" src="static/js/firebase.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #121212;
+            color: #ffffff;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        spline-viewer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            width: 400px;
+            margin-right: 50px;
+            z-index: 1;
+        }
+
+        h1, h2 {
+            color: #ffffff;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 12px;
+            outline: none;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            text-align: center;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #2575fc, #6a11cb);
+        }
+
+        .logout-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        .logout-container button {
+            background: linear-gradient(135deg, #ff416c, #ff4b2b);
+            padding: 10px 20px;
+            border-radius: 20px;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .toggle-link {
+            margin-top: 10px;
+            color: #00bcd4;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        .toggle-link:hover {
+            color: #0097a7;
+        }
+
+        #get-started {
+            display: none; /* Initially hidden */
+            margin-top: 20px;
+            background: linear-gradient(135deg, #34d399, #10b981);
+        }
+
+        #get-started:hover {
+            background: linear-gradient(135deg, #10b981, #34d399);
+        }
+    </style>
+</head>
+<body>
+    <spline-viewer url="https://prod.spline.design/ApKmbNf0B3ob89qq/scene.splinecode"></spline-viewer>
+    <div class="logout-container">
+        <button onclick="logoutUser()">Logout</button>
+    </div>
+    <div class="container">
+        <h1>Secure File Encryption</h1>
+        <div id="auth-container">
+            <div id="register-section">
+                <h2>Register</h2>
+                <input type="email" id="register-email" placeholder="Email" required>
+                <input type="password" id="register-password" placeholder="Password" required>
+                <button onclick="registerUser()">Register</button>
+                <p class="toggle-link" onclick="toggleAuth('login')">Already a user? Login</p>
+            </div>
+            <div id="login-section" style="display: none;">
+                <h2>Login</h2>
+                <input type="email" id="login-email" placeholder="Email" required>
+                <input type="password" id="login-password" placeholder="Password" required>
+                <button onclick="loginUser()">Login</button>
+                <p class="toggle-link" onclick="toggleAuth('register')">New user? Register</p>
+            </div>
+        </div>
+        <button id="get-started" onclick="redirectToApp()">Get Started</button>
+    </div>
+    <script>
+        function toggleAuth(section) {
+            document.getElementById('login-section').style.display = section === 'login' ? 'block' : 'none';
+            document.getElementById('register-section').style.display = section === 'register' ? 'block' : 'none';
+        }
+
+        function loginUser() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            firebase.auth().signInWithEmailAndPassword(email, password)
+                .then(() => {
+                    document.getElementById('auth-container').style.display = 'none'; // Hide auth container
+                    document.getElementById('get-started').style.display = 'block'; // Show "Get Started" button
+                })
+                .catch(error => alert(error.message));
+        }
+
+        function registerUser() {
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            
+            firebase.auth().createUserWithEmailAndPassword(email, password)
+                .then(() => {
+                    alert('Registration successful!');
+                    document.getElementById('auth-container').style.display = 'none'; // Hide auth container
+                    document.getElementById('get-started').style.display = 'block'; // Show "Get Started" button
+                })
+                .catch(error => alert(error.message));
+        }
+
+        function logoutUser() {
+            firebase.auth().signOut().then(() => {
+                window.location.href = "/"; // Redirect to login page on logout
+            }).catch(error => alert(error.message));
+        }
+
+        function redirectToApp() {
+            window.location.href = "/index"; // Redirect to /index
+        }
+
+        // Automatically redirect if user is already logged in
+        firebase.auth().onAuthStateChanged(user => {
+            if (user) {
+                document.getElementById('auth-container').style.display = 'none'; // Hide auth container
+                document.getElementById('get-started').style.display = 'block'; // Show "Get Started" button
+            }
+        });
+    </script>
+    <footer style="position: absolute; bottom: 0; width: 100%; text-align: center; background: rgba(0, 0, 0, 0.8); color: white; padding: 10px 0;">
+        <p>Contact Us: <a href="mailto:utkarshnarwade2006@gmail.com" style="color: #00bcd4; text-decoration: none;">utkarshnarwade2006@gmail.com</a></p>
+        <p>&copy; 2025 CryptKnight. All rights reserved.</p>
+    </footer>
+</body>
+</html>
